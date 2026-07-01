@@ -1,63 +1,43 @@
 # Security
 
-Report security issues privately.
+## Report Privately
 
-## Do Not Open Public Issues For
+Do not open public issues for:
 
-- Secrets or credential exposure.
-- Command injection.
-- Unsafe remote installer usage.
-- Privileged write problems.
-- Auth-flow or secret-management bugs.
+- Credential leaks.
+- Supply-chain compromise.
+- Auth token exposure.
+- Vulnerabilities in generated examples that could expose secrets.
 
-Until a dedicated security contact exists, report privately to the repository maintainer.
-
-## Include
-
-- Affected file and command.
-- Impact.
-- Reproduction steps.
-- Suggested fix, if available.
+Use GitHub private vulnerability reporting when available.
 
 ## Scope
 
-Security-sensitive areas:
+In scope for this NixOS edition:
 
-- Remote installer commands.
-- Lockfile policy in `agentic-tools.lock.yaml`.
-- Module metadata in `modules.yaml`.
-- Shell quoting and environment-variable handling.
-- Writes to `/usr/local/bin`, `/usr/share/keyrings`, and apt source lists.
-- Secret-management instructions.
-- Auth instructions.
-- Auto-configuration that mutates shell, Git, SSH, or tool config.
-- Cloud-init user-data and snapshot cleanup.
-- Manifest generation under `/var/lib/agentic-workstation`.
+- NixOS module options.
+- Flake package definitions.
+- Dev shell and CI validation.
+- Documentation that could lead users to insecure host configuration.
+
+Out of scope for this edition:
+
+- Ubuntu apt installer behavior.
+- cloud-init VM factory flows.
+- Remote installer execution.
+
+Those belong to `agentic-workstation-ubuntu`.
 
 ## Secret Handling
 
-The installer must not collect, store, print, or transmit credentials.
-
-Auth commands belong in documentation only. Use `op`, `gh`, cloud CLIs, and model CLIs through their own login flows.
+- Do not commit tokens, API keys, or service account files.
+- Keep secrets out of flakes and NixOS modules.
+- Use host-level secret management for declared secrets.
+- Keep auth flows manual unless a dedicated secret-management integration is added.
 
 ## Supply Chain
 
-Run:
-
-```bash
-./scripts/render-plan.sh --profile coding-agent | jq .
-./scripts/verify-lockfile.sh
-cargo run -- verify-lockfile
-./scripts/audit-remote-installers.sh
-```
-
-Every remote installer should be documented in `agentic-tools.lock.yaml` or removed. Prefer pinned package versions and reproducible image refs over moving `main` branches or `latest` package targets.
-
-The typed Rust validator owns read-only lockfile policy. Installer package commands should consume `agentic-tools.lock.yaml` pins rather than duplicating versions in shell code.
-
-## Maintainer Checklist
-
-- Reproduce the report in a disposable VM when possible.
-- Check whether the issue affects a default profile.
-- Check whether credentials, tokens, or rendered cloud-init files could be exposed.
-- Patch docs and lockfile policy when the fix changes installation behavior.
+- Review `flake.lock` updates.
+- Prefer Nixpkgs packages.
+- Use explicit unfree package predicates instead of broad unfree enablement when practical.
+- Keep package additions tied to a profile or documented option.

@@ -1,59 +1,59 @@
 # Use Cases
 
-Choose the smallest profile that matches the machine's job. Smaller profiles install faster, snapshot better, and reduce credential and daemon surface area.
+Choose the smallest NixOS profile that matches the machine's job.
 
-## Solo Technical Founder
+## Interactive Coding Machine
 
-Use `coding-agent` for an interactive AI development VM.
-
-```bash
-./install-agentic-tools.sh --profile coding-agent
+```nix
+programs.agentic-workstation = {
+  enable = true;
+  profile = "coding-agent";
+};
 ```
 
-## Agent Runner Fleet
+## Security Review Machine
 
-Use `base-image` for snapshots, then `agent-runner` for headless machines.
-
-```bash
-./install-agentic-tools.sh --profile base-image --resume
-./scripts/prepare-snapshot.sh
+```nix
+programs.agentic-workstation = {
+  enable = true;
+  profile = "security";
+};
 ```
 
-Then run the runner layer on each new VM:
+## Full Factory Machine
 
-```bash
-./install-agentic-tools.sh --profile agent-runner --resume
+```nix
+programs.agentic-workstation = {
+  enable = true;
+  profile = "factory";
+};
 ```
 
-## Security Review
+## Local Model Machine
 
-Use `security` for disposable supply-chain and static-analysis work.
-
-```bash
-./install-agentic-tools.sh --profile security
+```nix
+programs.agentic-workstation = {
+  enable = true;
+  profile = "local-llm";
+};
 ```
 
-## Full Factory
+## Server-Oriented Host
 
-Use `factory` when a machine needs artifact extraction, model/data helpers, security scanners, browser tooling, and agent CLIs.
-
-```bash
-./install-agentic-tools.sh --profile factory
+```nix
+programs.agentic-workstation = {
+  enable = true;
+  profile = "openclaw-server";
+  docker.enable = true;
+};
 ```
 
-## Local Model Workstation
+This installs server-oriented packages and enables Docker through NixOS. It does not create `/opt/openclaw`, write secrets templates, or install Ubuntu service files.
 
-Use `local-llm` when Ollama and model/data tooling are needed.
+## Disposable Ubuntu VM Factory
 
-```bash
-./install-agentic-tools.sh --profile local-llm
-```
+Use the Ubuntu edition instead:
 
-## OpenClaw Server
-
-Use `openclaw-server` for an Ubuntu host that needs Docker, OpenTelemetry Collector files, Neon helpers, Hetzner S3 helpers, and server hardening tools.
-
-```bash
-./install-agentic-tools.sh --profile openclaw-server
-./scripts/doctor.sh --profile openclaw-server
+```text
+https://github.com/hghalebi/agentic-workstation-ubuntu
 ```

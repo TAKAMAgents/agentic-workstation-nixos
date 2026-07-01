@@ -1,25 +1,17 @@
 # Profile Files
 
-Each `*.env` file sets installer booleans consumed by `install-agentic-tools.sh`.
+The `profiles/*.env` files are retained for planner compatibility with the original Bash installer model.
 
-## Use a Profile
+For NixOS hosts, prefer the module option:
 
-```bash
-./install-agentic-tools.sh --profile agent-runner
+```nix
+programs.agentic-workstation.profile = "coding-agent";
 ```
 
-The installer sources `profiles/<name>.env`, applies compatibility overrides such as `SKIP_BROWSER_TOOLS=1`, then runs the enabled modules.
+The NixOS module maps profile names to Nixpkgs package bundles in `nix/nixos-module.nix`. It does not execute the Bash installer modules described by these environment files.
 
-## Authoring Rules
-
-- Use `0` or `1` values.
-- Do not run commands.
-- Do not include secrets.
-- Keep profile intent documented in `docs/profiles.md`.
-
-## Verify
+Validate planner compatibility:
 
 ```bash
-./install-agentic-tools.sh --profile agent-runner --json-plan | jq .
-./scripts/doctor.sh --profile agent-runner
+nix run . -- plan --profile coding-agent --json
 ```

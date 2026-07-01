@@ -83,7 +83,7 @@ let
     ffmpeg
     imagemagick
     pandoc
-    poppler_utils
+    poppler-utils
     tesseract
     tree
   ]);

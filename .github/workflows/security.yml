@@ -24,11 +24,9 @@ jobs:
         with:
           sarif_file: scorecard-results.sarif
 
-  audit:
+  lockfile:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Remote installer audit
-        run: ./scripts/audit-remote-installers.sh
       - name: Verify lockfile
         run: ./scripts/verify-lockfile.sh

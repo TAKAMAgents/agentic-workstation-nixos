@@ -3,31 +3,34 @@
 [![CI](https://github.com/hghalebi/agentic-workstation-nixos/actions/workflows/ci.yml/badge.svg)](https://github.com/hghalebi/agentic-workstation-nixos/actions/workflows/ci.yml)
 [![Security](https://github.com/hghalebi/agentic-workstation-nixos/actions/workflows/security.yml/badge.svg)](https://github.com/hghalebi/agentic-workstation-nixos/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Ubuntu](https://img.shields.io/badge/ubuntu-22.04%20%7C%2024.04-orange.svg)](tests)
 [![NixOS](https://img.shields.io/badge/NixOS-module-blue.svg)](docs/nix.md)
 
 Build repeatable NixOS workstations for agentic software development.
 
-The repo is a layered workstation factory:
+This edition is a Nix flake and NixOS module. It installs the `agentic-workstation` planning CLI and profile-shaped package bundles through normal NixOS configuration.
+
+The Ubuntu Bash installer, apt commands, cloud-init VM factory flow, and remote installer audit live in the separate Ubuntu edition:
 
 ```text
-base image -> cloud-init -> profile install -> workspace hydration -> health checks
+https://github.com/hghalebi/agentic-workstation-ubuntu
 ```
 
-This edition exposes a NixOS module and Nix flake apps for agentic software development machines. Ubuntu bootstrap scripts are maintained in the separate Ubuntu edition.
-
-## NixOS Quick Start
+## Quick Start
 
 Add the module to a NixOS flake:
 
 ```nix
 {
-  inputs.agentic-workstation-nixos.url = "github:hghalebi/agentic-workstation-nixos";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    agentic-workstation-nixos.url = "github:hghalebi/agentic-workstation-nixos";
+  };
 
   outputs = { self, nixpkgs, agentic-workstation-nixos, ... }: {
     nixosConfigurations.workstation = nixpkgs.lib.nixosSystem {
       system = "aarch64-linux";
       modules = [
+        ./configuration.nix
         agentic-workstation-nixos.nixosModules.default
         {
           programs.agentic-workstation = {
@@ -41,469 +44,114 @@ Add the module to a NixOS flake:
 }
 ```
 
+Apply the host:
+
+```bash
+sudo nixos-rebuild switch --flake .#workstation
+```
+
 Inspect the module example from a checkout:
 
 ```bash
 nix --extra-experimental-features 'nix-command flakes' run .#nixos-module
 ```
 
-Read-only planning and lockfile validation also ship as a typed Rust CLI:
+## Module Options
 
-```bash
-cargo run -- plan --profile coding-agent --json
-cargo run -- verify-lockfile
+Minimal module usage:
+
+```nix
+programs.agentic-workstation = {
+  enable = true;
+  profile = "coding-agent";
+};
 ```
 
-The Nix flake builds that CLI and runs the static validation graph:
+Common options:
 
-```bash
-nix develop
-nix run .#check
-nix run .#e2e
-nix flake check
+```nix
+programs.agentic-workstation = {
+  enable = true;
+  profile = "factory";
+
+  browserTools.enable = true;
+  cloudTools.enable = true;
+  onePassword.enable = false;
+  docker.enable = true;
+  direnv.enable = true;
+
+  extraPackages = with pkgs; [
+    terraform
+  ];
+};
 ```
 
-If flakes are not enabled globally, pass the feature flags explicitly:
+Profiles currently accepted by the module:
+
+| Profile | NixOS behavior |
+| --- | --- |
+| `minimal` | CLI, core shell tools, Git, jq, shell quality tools. |
+| `base-image` | Same lightweight package bundle as `minimal`. |
+| `coding-agent` | Default interactive coding package bundle. |
+| `human-dev` | Same package class as `coding-agent` for larger human-operated machines. |
+| `agent-runner` | Lean autonomous-agent package bundle. |
+| `factory` | Coding bundle plus artifact and security tooling available in Nixpkgs. |
+| `security` | Security review package bundle. |
+| `local-llm` | Coding bundle plus local model runtime packages available in Nixpkgs. |
+| `openclaw-server` | Server-oriented bundle; can enable Docker through NixOS. |
+
+## Boundaries
+
+This NixOS edition does:
+
+- Install the Rust `agentic-workstation` CLI.
+- Add profile-shaped package bundles to `environment.systemPackages`.
+- Enable NixOS-native services such as Docker and direnv when requested.
+- Provide reproducible dev shells and flake validation.
+
+This NixOS edition does not:
+
+- Run remote install scripts.
+- Mutate shell dotfiles.
+- Write `/var/lib/agentic-workstation/manifest.json`.
+- Configure apt repositories.
+- Render or apply cloud-init.
+- Clone or hydrate workspaces.
+- Automate service authentication.
+
+Authentication remains explicit. After enabling the module, run login commands for the services you use, such as `gh auth login`, `op account add`, `gcloud auth login`, or `hcloud context create`.
+
+## Development
+
+Open a dev shell:
 
 ```bash
-nix --extra-experimental-features 'nix-command flakes' build
-nix --extra-experimental-features 'nix-command flakes' run .#check
+nix --extra-experimental-features 'nix-command flakes' develop
 ```
 
-## Who This Is For
-
-- Solo technical founders who want a fresh AI coding VM in minutes.
-- Teams that need reproducible agent-runner machines.
-- Security reviewers who need disposable supply-chain-analysis boxes.
-- Platform engineers building golden images for AI-native development.
-
-## What This Is Not
-
-- Not a dotfiles manager.
-- Not a secrets manager.
-- Not a Kubernetes or Docker mega-bootstrapper by default.
-- Not a replacement for devcontainers, Nix, or Packer. It can complement them.
-
-## Requirements
-
-- Ubuntu Linux on `amd64` for the Bash installer.
-- NixOS with flakes enabled for the NixOS module.
-- A root shell or a user with `sudo`.
-- Network access to apt, npm, PyPI/uv, Go modules, Cargo, and vendor release endpoints.
-- For first bootstrap, either `git` or `curl`/`wget` plus `tar`.
-
-Other Linux distributions may work for read-only planning, but Ubuntu and NixOS are the supported workstation targets.
-
-## Quick Start
-
-Clone the repository, run the default profile, and verify the machine:
-
-```bash
-git clone https://github.com/hghalebi/agentic-workstation-nixos.git
-cd agentic-workstation
-./install-agentic-tools.sh
-./scripts/doctor.sh --profile coding-agent
-```
-
-Build and validate the repository CLI with Nix:
-
-```bash
-nix --extra-experimental-features 'nix-command flakes' build
-nix --extra-experimental-features 'nix-command flakes' run .#check
-nix --extra-experimental-features 'nix-command flakes' run .#e2e
-```
-
-## Install
-
-On a fresh machine without Git installed yet, bootstrap from a GitHub archive:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/hghalebi/agentic-workstation/main/scripts/bootstrap.sh | bash
-```
-
-Choose a profile without cloning first:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/hghalebi/agentic-workstation/main/scripts/bootstrap.sh \
-  | bash -s -- --profile minimal
-```
-
-Keep a local copy of the repo scripts without Git:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/hghalebi/agentic-workstation/main/scripts/bootstrap.sh \
-  | bash -s -- --dir "$HOME/agentic-workstation"
-```
-
-Clone the repository:
-
-```bash
-git clone https://github.com/hghalebi/agentic-workstation-nixos.git
-cd agentic-workstation
-```
-
-Run the default `coding-agent` profile:
-
-```bash
-./install-agentic-tools.sh
-```
-
-From a non-root shell:
-
-```bash
-sudo ./install-agentic-tools.sh
-```
-
-## Nix Usage
-
-Use Nix when you want a reproducible build or validation environment for the repository itself, or when the host is NixOS:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/hghalebi/agentic-workstation/main/scripts/bootstrap-nix.sh | bash
-```
-
-The Nix bootstrapper installs Nix with apt when it is missing, clones the repo into `$HOME/agentic-workstation`, builds the CLI, runs `nix run .#check`, and realizes the development shell packages with `nix develop --command true`.
-
-```bash
-nix --extra-experimental-features 'nix-command flakes' build
-./result/bin/agentic-workstation --help
-```
-
-Run the Rust CLI through the flake without creating `./result`:
-
-```bash
-nix --extra-experimental-features 'nix-command flakes' run . -- plan --profile coding-agent
-nix --extra-experimental-features 'nix-command flakes' run . -- verify-lockfile
-```
-
-Run the static validation bundle:
+Run checks:
 
 ```bash
 nix --extra-experimental-features 'nix-command flakes' run .#check
 nix --extra-experimental-features 'nix-command flakes' flake check
 ```
 
-Open a development shell with the project check and Rust tools:
+Run the planning CLI:
 
 ```bash
-nix --extra-experimental-features 'nix-command flakes' develop
-nix --extra-experimental-features 'nix-command flakes' develop .#minimal
-nix --extra-experimental-features 'nix-command flakes' develop .#factory
-nix --extra-experimental-features 'nix-command flakes' develop .#security
-```
-
-The flake exposes `.#plan`, `.#doctor`, `.#bootstrap-nix`, `.#check`, `.#e2e`, and `.#docker-smoke` apps. See [docs/nix.md](docs/nix.md) for how Nix changes terminal usage, reproducible development, package availability, and OpenClaw workflows.
-
-The flake also exposes a NixOS module:
-
-```bash
-nix --extra-experimental-features 'nix-command flakes' run .#nixos-module
-```
-
-Nix currently builds and validates the repository CLI and check tooling. On NixOS, use `programs.agentic-workstation.enable = true;` from the flake module for host packages. On Ubuntu, use `./install-agentic-tools.sh` for privileged workstation setup, shell configuration, manifests, and optional workspace hydration.
-
-## Options
-
-Install a named profile:
-
-```bash
-./install-agentic-tools.sh --profile minimal
-./install-agentic-tools.sh --profile factory
-./install-agentic-tools.sh --profile agent-runner
-./install-agentic-tools.sh --profile openclaw-server
-./scripts/install-openclaw-server.sh
-```
-
-Resume after a failed install:
-
-```bash
-./install-agentic-tools.sh --profile factory --resume
-```
-
-Run or skip specific modules:
-
-```bash
-./install-agentic-tools.sh --only agents
-./install-agentic-tools.sh --skip browser
-```
-
-Inspect before mutating the machine:
-
-```bash
-./install-agentic-tools.sh --profile coding-agent --dry-run
-./install-agentic-tools.sh --profile coding-agent --json-plan
-```
-
-Skip Playwright browser binaries:
-
-```bash
-SKIP_BROWSER_TOOLS=1 ./install-agentic-tools.sh
-```
-
-Install the factory layer:
-
-```bash
-INCLUDE_FACTORY_TOOLS=1 ./install-agentic-tools.sh
-```
-
-Install the factory layer and Ollama:
-
-```bash
-INCLUDE_FACTORY_TOOLS=1 INCLUDE_LOCAL_MODEL_RUNTIME=1 ./install-agentic-tools.sh
-```
-
-Install tools without shell, Git, or hook configuration:
-
-```bash
-SKIP_AUTO_CONFIG=1 ./install-agentic-tools.sh
-```
-
-Copy an existing workspace into the target machine:
-
-```bash
-WORKSPACE_SOURCE=/path/to/workspace ./install-agentic-tools.sh
-```
-
-Set the workspace destination:
-
-```bash
-WORKSPACE_SOURCE=/path/to/workspace WORKSPACE_TARGET="$HOME/workspace" ./install-agentic-tools.sh
-```
-
-Hydrate a Git workspace:
-
-```bash
-WORKSPACE_REPO=git@github.com:hghalebi/project.git \
-WORKSPACE_REF=main \
-WORKSPACE_TARGET=/workspace/project \
-./install-agentic-tools.sh --profile agent-runner
-```
-
-## Profiles
-
-| Profile | Use case |
-| --- | --- |
-| `minimal` | Small reusable VM. |
-| `base-image` | Snapshot source image. |
-| `coding-agent` | Default interactive agent workstation. |
-| `human-dev` | Larger human-operated development machine. |
-| `agent-runner` | Lean autonomous agent runtime. |
-| `factory` | Full software-factory environment. |
-| `security` | Security review and supply-chain analysis. |
-| `local-llm` | Local model runtime. |
-| `openclaw-server` | OpenClaw server host with Docker, OpenTelemetry, Neon, Hetzner S3, and server hardening helpers. |
-
-Decision tree:
-
-| Need | Use |
-| --- | --- |
-| Normal AI development machine | `coding-agent` |
-| Fast future VM boots | `base-image`, then snapshot |
-| Autonomous agent machines | `agent-runner` |
-| Security analysis | `security` |
-| Every artifact and factory helper | `factory` |
-| Ollama or local models | `local-llm` |
-| OpenClaw server deployment base | `openclaw-server` |
-
-## What Gets Installed
-
-Default layer:
-
-| Area | Tools |
-| --- | --- |
-| Core shell | `git`, `gh`, `curl`, `wget`, `jq`, `rg`, `fd`, `fzf`, `tmux`, `zellij`, `direnv`, `make`, `unzip`, `zip` |
-| Build/runtime | compilers, `python3`, `pipx`, `node`, `npm`, `npx`, `go`, `rustup`, `rustc`, `cargo`, `uv`, `uvx`, `nix` |
-| Code quality | `shellcheck`, `shfmt`, `bats`, `pre-commit` |
-| Data and services | `sqlite3`, `psql`, `redis-cli`, `dig`, `nc` |
-| Debugging | `lsof`, `strace`, `ltrace`, `hyperfine`, `ncdu`, `duf` |
-| Version managers | `mise`, `aqua` |
-| Git/YAML | `delta`, `yq`, `git-lfs` |
-| Secret management | `op` from 1Password CLI |
-| Agent/model CLIs | `codex`, `claude`, `gemini`, `copilot`, `opencode`, `openclaw`, `openhands`, `aider`, `llm` |
-| Cloud/database | `gcloud`, `hcloud`, `neonctl`, `clasp`, `gws`, `hc` |
-| Browser/MCP | `playwright`, `@modelcontextprotocol/inspector` |
-
-Factory layer:
-
-| Area | Tools |
-| --- | --- |
-| Task runners | `task`, `just` |
-| Artifacts | `pandoc`, `poppler-utils`, `ffmpeg`, ImageMagick, Tesseract, `httpie` |
-| Security | `semgrep`, `snyk`, `gitleaks`, `syft`, `grype`, `cosign`, `trivy`, `hadolint` |
-| Tracing | `bpftrace`, `perf` |
-| Data/model | `deepagents`, `dvc`, `hf` |
-| Local models | `ollama`, when `INCLUDE_LOCAL_MODEL_RUNTIME=1` |
-
-OpenClaw server layer:
-
-| Area | Tools |
-| --- | --- |
-| Server base | `ufw`, `fail2ban`, `nginx`, `unattended-upgrades`, journald limits |
-| Docker | `docker-ce`, `docker-ce-cli`, `containerd.io`, Buildx, Docker Compose plugin via Docker's official apt repository |
-| Rust server tools | `sqlx-cli`, `cargo-nextest`, `cargo-watch` |
-| Layout | `/opt/openclaw/{app,tools,repos,otel,secrets,backups,logs}` |
-| Observability | OpenTelemetry Collector compose file and config under `/opt/openclaw/otel` |
-| Neon | `postgresql-client`, `sqlx-cli`, `/opt/openclaw/app/.env.example` |
-| Hetzner S3 | `awscli`, env template, bucket check script |
-| 1Password SSH | `/opt/openclaw/tools/op-ssh-helper` |
-| Dotfiles | optional clone of `https://github.com/hghalebi/dotfiles`; installer execution is opt-in |
-
-## Auto-Configuration
-
-By default, the installer:
-
-- Adds a marked PATH and `mise` activation block to `.profile` and `.bashrc`.
-- Adds the same block to `.zshrc` when `.zshrc` already exists.
-- Configures Git to use `delta` when no existing value is set for that Git key.
-- Installs local pre-commit hooks when `.pre-commit-config.yaml` exists.
-
-Disable this with:
-
-```bash
-SKIP_AUTO_CONFIG=1 ./install-agentic-tools.sh
-```
-
-Planned opt-in configuration is tracked in [ROADMAP.md](ROADMAP.md).
-
-## Health and Manifests
-
-Run health checks:
-
-```bash
-./scripts/doctor.sh --profile coding-agent
-./scripts/doctor.sh --profile coding-agent --json
-./scripts/doctor.sh --profile openclaw-server
-```
-
-Check authentication status without handling secrets:
-
-```bash
-./scripts/auth-status.sh
-```
-
-Each install writes:
-
-```text
-/var/lib/agentic-workstation/manifest.json
-```
-
-The manifest records the profile, install time, host, OS, and key tool versions.
-
-Compare manifests:
-
-```bash
-./scripts/diff-manifest.sh expected.json /var/lib/agentic-workstation/manifest.json
-```
-
-## VM Factory Flow
-
-Build a base image:
-
-```bash
-./install-agentic-tools.sh --profile base-image --resume
-./scripts/prepare-snapshot.sh
-```
-
-Create a snapshot from that VM. Future VMs start from the snapshot and run only the profile layer they need:
-
-```bash
-./install-agentic-tools.sh --profile agent-runner --resume
-```
-
-For unattended provisioning, use:
-
-```bash
-./scripts/render-cloud-init.sh \
-  --user ubuntu \
-  --ssh-key ~/.ssh/id_ed25519.pub \
-  --profile agent-runner \
-  --ref v0.1.1 \
-  > cloud-init.agent-runner.yaml
-```
-
-Create a Hetzner VM, generate/register SSH keys, render cloud-init, and start
-the profile install automatically:
-
-```bash
-HCLOUD_TOKEN=... ./scripts/agent-vm-new.sh --name repo-fix --profile agent-runner
-```
-
-For local smoke testing, use:
-
-```bash
-docker build -f tests/Dockerfile.ubuntu-24.04 .
-```
-
-## Authenticate Tools
-
-The installer does not automate auth. Run only the commands for services you use:
-
-```bash
-gh auth login
-copilot auth login
-codex --login
-claude auth login
-gemini auth login
-op account add
-gcloud auth login --no-launch-browser
-gcloud auth application-default login --no-launch-browser
-hcloud context create default
-neonctl auth
-clasp login --no-localhost
-gws auth setup
-gws auth login
-hc auth login
-openclaw onboard --install-daemon
-llm keys set openai
-hf auth login
-```
-
-## Safety Model
-
-- The script is designed to be rerunnable.
-- Auth flows stay out of the installer.
-- Secrets are not collected, written, or printed.
-- Docker is installed by the `openclaw-server` profile, but not by the default workstation profiles. Kubernetes, Terraform/OpenTofu, AWS CLI v2, and Azure CLI are documented but not installed by default.
-- Some tools use official remote install scripts. See [commands.md](commands.md) for the exact commands and source links.
-- Remote installers are audited in [docs/remote-installers.md](docs/remote-installers.md).
-- Tool pinning policy starts in [agentic-tools.lock.yaml](agentic-tools.lock.yaml).
-
-## Validate Changes
-
-Run:
-
-```bash
-bash -n install-agentic-tools.sh scripts/*.sh cloud/*.sh
-shellcheck install-agentic-tools.sh scripts/*.sh cloud/*.sh
-shfmt -i 2 -ci -d install-agentic-tools.sh scripts/*.sh cloud/*.sh
-cargo fmt --check
-cargo clippy --all-targets --all-features -- -D warnings
-cargo test --all-targets --all-features
-cargo run -- verify-lockfile
-nix --extra-experimental-features 'nix-command flakes' run .#check
-nix --extra-experimental-features 'nix-command flakes' run .#e2e
-pre-commit run --all-files
+nix --extra-experimental-features 'nix-command flakes' run . -- plan --profile coding-agent --json
+nix --extra-experimental-features 'nix-command flakes' run . -- verify-lockfile
 ```
 
 ## Docs
 
-- [commands.md](commands.md): install commands and source links.
-- [docs/nix.md](docs/nix.md): Nix bootstrap, apps, shells, and e2e workflow.
-- [docs/profiles.md](docs/profiles.md): profile behavior.
-- [docs/auth.md](docs/auth.md): auth commands and status checks.
-- [docs/vm-lifecycle.md](docs/vm-lifecycle.md): snapshots, cloud-init, and workspace hydration.
-- [docs/hetzner-dx.md](docs/hetzner-dx.md): Hetzner-focused operator DX design.
-- [docs/architecture.md](docs/architecture.md): factory architecture.
-- [docs/use-cases.md](docs/use-cases.md): common use cases.
-- [docs/threat-model.md](docs/threat-model.md): security model.
-- [docs/remote-installers.md](docs/remote-installers.md): remote installer audit policy.
-- [docs/status.md](docs/status.md): project health targets.
-- [docs/agent-runner.md](docs/agent-runner.md): optional headless runner service.
-- [docs/release.md](docs/release.md): Release Please pipeline and release checklist.
-- [ROADMAP.md](ROADMAP.md): planned opt-in configuration.
-- [CONTRIBUTING.md](CONTRIBUTING.md): contribution workflow.
-- [SECURITY.md](SECURITY.md): vulnerability reporting.
-- [CHANGELOG.md](CHANGELOG.md): release history.
+- [docs/nix.md](docs/nix.md): NixOS module and flake workflows.
+- [docs/architecture.md](docs/architecture.md): module architecture and boundaries.
+- [docs/profiles.md](docs/profiles.md): profile-to-package-bundle mapping.
+- [docs/use-cases.md](docs/use-cases.md): choosing module profiles.
+- [docs/vm-lifecycle.md](docs/vm-lifecycle.md): version-controlled NixOS host lifecycle.
+- [docs/auth.md](docs/auth.md): authentication commands and secret boundaries.
+- [commands.md](commands.md): command reference for this edition.
 
 ## License
 

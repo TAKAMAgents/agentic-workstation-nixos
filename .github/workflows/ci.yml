@@ -73,17 +73,33 @@ jobs:
         run: nix run .#e2e
       - name: Check flake outputs
         run: nix flake check --no-build
+      - name: Evaluate NixOS module
+        run: |
+          nix eval --impure --raw --expr "
+          let
+            flake = builtins.getFlake \"path:$PWD\";
+            nixpkgs = builtins.getFlake \"github:NixOS/nixpkgs/nixos-unstable\";
+            host = nixpkgs.lib.nixosSystem {
+              system = \"x86_64-linux\";
+              modules = [
+                flake.nixosModules.default
+                {
+                  boot.loader.grub.enable = false;
+                  fileSystems.\"/\" = {
+                    device = \"none\";
+                    fsType = \"tmpfs\";
+                  };
+                  system.stateVersion = \"26.05\";
+                  nixpkgs.config.allowUnfreePredicate = pkg:
+                    builtins.elem (nixpkgs.lib.getName pkg) [ \"1password-cli\" ];
+                  programs.agentic-workstation.enable = true;
+                }
+              ];
+            };
+          in
+          host.config.system.build.toplevel.drvPath
+          "
       - name: Realize named dev shells
         run: |
           nix develop .#minimal --command true
           nix develop .#coding-agent --command true
-
-  docker-smoke:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        ubuntu: ["22.04", "24.04"]
-    steps:
-      - uses: actions/checkout@v5
-      - name: Docker static smoke
-        run: docker build -f tests/Dockerfile.ubuntu-${{ matrix.ubuntu }} .

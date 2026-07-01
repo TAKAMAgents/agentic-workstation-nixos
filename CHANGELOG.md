@@ -1,11 +1,13 @@
 # Changelog
 
+This NixOS edition was split from the original combined `hghalebi/agentic-workstation` repository after `v0.2.0`. Historical release links below intentionally point to the original repository.
+
 ## Unreleased
 
-- Refreshed documentation structure for clearer install, Nix, validation, and operations workflows.
-- Added a one-command Nix bootstrap script that installs Nix when needed, clones the repo, builds the CLI, runs checks, and realizes the development shell packages.
-- Promoted Nix to a first-class developer path with split flake modules, named shells, workflow apps, CI coverage, and an e2e bootstrap smoke test.
-- Added a Release Please pipeline for automated release PRs, changelog updates, version bumps, tags, and GitHub releases.
+- Reframed documentation around the NixOS module and host-flake workflow.
+- Clarified that Ubuntu apt, cloud-init, and mutating Bash installer workflows belong to `agentic-workstation-ubuntu`.
+- Updated CI and nightly workflows to evaluate the NixOS module and profile matrix.
+- Fixed the factory profile package list for current Nixpkgs by using `poppler-utils`.
 
 ## [0.2.0](https://github.com/hghalebi/agentic-workstation/compare/v0.1.1...v0.2.0) (2026-06-15)
 

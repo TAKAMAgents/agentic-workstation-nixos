@@ -1,5 +1,5 @@
 name: Security hardening request
-description: Request supply-chain, auth, cloud-init, or host-hardening improvements.
+description: Request supply-chain, auth, NixOS module, or host-hardening improvements.
 title: "security: "
 labels: ["security"]
 body:

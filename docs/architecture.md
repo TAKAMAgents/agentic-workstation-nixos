@@ -1,53 +1,46 @@
 # Architecture
 
-Agentic Workstation is a layered Ubuntu workstation factory. Each layer has one job: install tools, hydrate workspaces, verify state, or report readiness.
+Agentic Workstation NixOS is a flake-packaged NixOS module.
 
 ```text
-Ubuntu base VM
-  -> base-image profile
-  -> provider snapshot
-  -> cloud-init first boot
-  -> profile install
-  -> workspace hydration
-  -> manifest + doctor checks
-  -> auth-status inspection
+flake input -> NixOS module -> profile package bundle -> host rebuild
 ```
-
-## Core Flow
-
-1. Select a profile from `profiles/*.env`.
-2. Resolve enabled modules.
-3. Install each module idempotently.
-4. Write `/var/lib/agentic-workstation/manifest.json`.
-5. Run `scripts/doctor.sh`.
-6. Run auth checks manually with `scripts/auth-status.sh`.
 
 ## Layers
 
 | Layer | Responsibility |
 | --- | --- |
-| `profiles/*.env` | Select enabled installer modules. |
-| `modules.yaml` | Document module metadata, verification commands, and package sources. |
-| `install-agentic-tools.sh` | Orchestrate modules and write the manifest. |
-| `src/` | Typed Rust CLI for read-only planning and lockfile validation. |
-| `config/` | Hold mise and aqua configuration. |
-| `cloud/` | Provide cloud-init examples and rendered user-data. |
-| `images/` | Hold Packer image stubs. |
-| `scripts/doctor.sh` | Verify installed tools. |
-| `scripts/auth-status.sh` | Inspect auth readiness without handling secrets. |
+| Rust CLI | Read-only planning and lockfile validation. |
+| Flake packages | Build the CLI and validation helpers. |
+| Dev shells | Provide reproducible contributor environments. |
+| NixOS module | Map workstation profiles to Nixpkgs package bundles and NixOS service toggles. |
+| Host flake | Own machine-specific configuration, secrets policy, users, hardware, and deployment. |
 
-## Design Rules
+## NixOS Module
 
-- Profiles decide what to install.
-- Modules do the work.
-- Auth is never automated.
-- Secrets are never written by the installer.
-- Plans should be inspectable before mutation.
-- Manifests should make installed state auditable after mutation.
-- Raw profile, lockfile, and environment input should be converted into typed Rust domain values before read-only policy decisions.
+The module is exposed as:
 
-## Nix Boundary
+```nix
+agentic-workstation-nixos.nixosModules.default
+agentic-workstation-nixos.nixosModules.agentic-workstation
+```
 
-The flake builds the Rust CLI, validation tools, named development shells, and Nix workflow apps. It also exposes an e2e smoke app that runs the Nix bootstrapper against a temporary clone and verifies the generated CLI.
+It adds packages to `environment.systemPackages` and may enable NixOS-native services such as `programs.direnv` and `virtualisation.docker`.
 
-Nix remains a reproducible developer and validation path, not a full replacement for the Ubuntu bootstrap. The full workstation installer still owns privileged system mutation such as apt packages, shell configuration, service files, manifests, and optional workspace hydration.
+## Boundaries
+
+The module avoids imperative host mutation. It does not:
+
+- Run curl-piped installers.
+- Configure apt repositories.
+- Edit `.bashrc`, `.zshrc`, or Git config.
+- Write install manifests.
+- Run auth flows.
+- Render cloud-init.
+- Clone or hydrate project workspaces.
+
+Those behaviors belong to the Ubuntu edition.
+
+## Compatibility Source
+
+Some Bash scripts and cloud files remain in the source tree because the Rust planner, docs history, and validation harness were split from the original combined repository. They are compatibility material, not the supported NixOS installation interface.

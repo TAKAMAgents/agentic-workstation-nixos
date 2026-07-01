@@ -1,51 +1,34 @@
 # Authentication
 
-The installer does not automate login flows or write secrets.
+The NixOS module installs tools. It does not authenticate them.
 
-## Log In
+After applying a host configuration, run only the auth commands for services you use:
 
 ```bash
 gh auth login
-copilot auth login
-codex --login
-claude auth login
-gemini auth login
 op account add
 gcloud auth login --no-launch-browser
 gcloud auth application-default login --no-launch-browser
 hcloud context create default
-neonctl auth
-clasp login --no-localhost
-gws auth setup
-gws auth login
-hc auth login
-openclaw onboard --install-daemon
-llm keys set openai
 hf auth login
 ```
 
-Run only the commands for tools you use. Most CLIs store credentials in their own standard locations.
+Some tools may not be installed by a selected profile or may require `extraPackages`.
 
-## Check Status
+## Secret Boundaries
+
+- Do not put tokens in `flake.nix`, NixOS modules, or committed config files.
+- Prefer service-native credential stores.
+- Keep `.env` files and rendered secrets out of Git.
+- Use host-level secret tooling such as SOPS, agenix, or a managed secret store when secrets must be declared.
+
+## Check Availability
 
 ```bash
-./scripts/auth-status.sh
-./scripts/auth-status.sh --json
+command -v gh
+command -v op
+command -v gcloud
+command -v hcloud
 ```
 
-## Output
-
-Human output uses:
-
-| Status | Meaning |
-| --- | --- |
-| `ok` | The tool is installed and appears authenticated. |
-| `missing` | The tool is missing or not authenticated. |
-
-The human output also prints the next login command for missing checks. JSON output is intended for scripts and CI jobs.
-
-## Security Notes
-
-- Do not put tokens in profile files, cloud-init files, or manifests.
-- Do not commit generated auth config.
-- Prefer each vendor CLI's normal login flow.
+The Ubuntu edition includes a broader `scripts/auth-status.sh` helper. In this NixOS edition, host config should be the source of truth for what is installed.

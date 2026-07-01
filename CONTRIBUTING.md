@@ -1,51 +1,60 @@
 # Contributing
 
-Keep the installer practical, auditable, and safe to rerun.
-
 ## Set Up
 
-Clone the repository and run checks before opening a pull request:
-
 ```bash
-bash -n install-agentic-tools.sh
-shellcheck install-agentic-tools.sh scripts/*.sh
-shfmt -i 2 -ci -d install-agentic-tools.sh scripts/*.sh
-cargo fmt --check
-cargo clippy --all-targets --all-features -- -D warnings
-cargo test --all-targets --all-features
-cargo run -- verify-lockfile
-pre-commit run --all-files
+nix --extra-experimental-features 'nix-command flakes' develop
 ```
 
-Use the flake when you want the repository-managed validation environment:
+## Validate
 
 ```bash
 nix --extra-experimental-features 'nix-command flakes' run .#check
+nix --extra-experimental-features 'nix-command flakes' flake check
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test --all-targets --all-features
 ```
 
-For installer changes, test in a disposable Ubuntu VM or container before opening a pull request.
+When changing the NixOS module, also evaluate a sample host:
 
 ```bash
-docker build -f tests/Dockerfile.ubuntu-24.04 .
+nix --extra-experimental-features 'nix-command flakes' eval --impure --raw --expr "
+let
+  flake = builtins.getFlake \"path:$PWD\";
+  nixpkgs = builtins.getFlake \"github:NixOS/nixpkgs/nixos-unstable\";
+  host = nixpkgs.lib.nixosSystem {
+    system = \"aarch64-linux\";
+    modules = [
+      flake.nixosModules.default
+      {
+        boot.loader.grub.enable = false;
+        fileSystems.\"/\" = {
+          device = \"none\";
+          fsType = \"tmpfs\";
+        };
+        system.stateVersion = \"26.05\";
+        nixpkgs.config.allowUnfreePredicate = pkg:
+          builtins.elem (nixpkgs.lib.getName pkg) [ \"1password-cli\" ];
+        programs.agentic-workstation.enable = true;
+      }
+    ];
+  };
+in
+host.config.system.build.toplevel.drvPath
+"
 ```
 
 ## Change Rules
 
-- Prefer official vendor install commands.
-- Link every non-apt install source in `commands.md`.
-- Keep daemon-level or destructive tools opt-in.
-- Make steps idempotent when practical.
-- Keep read-only planning and lockfile policy in the Rust CLI when possible.
-- Do not automate auth flows.
-- Do not write credentials to disk.
-- Do not add personal paths, account IDs, tokens, or organization names.
-- Update `README.md`, `commands.md`, `docs/`, and `CHANGELOG.md` for user-facing changes.
+- Keep NixOS module behavior declarative.
+- Do not add remote installer execution to the module.
+- Do not store secrets in examples.
+- Prefer Nixpkgs packages over ad hoc downloads.
+- Keep Ubuntu VM factory documentation in the Ubuntu edition.
 
 ## Pull Requests
 
-Include:
-
-- What changed.
-- Why it belongs in the selected profile or module.
-- How you tested it.
-- Known platform limits or follow-up work.
+- Explain the profile or module behavior changed.
+- Include validation commands run.
+- Update docs when options, defaults, or supported profiles change.
