@@ -19,5 +19,5 @@ This profile installs a lean set of tools for autonomous agent machines. It does
 For the Ubuntu service scaffold and workspace hydration workflow, use:
 
 ```text
-https://github.com/hghalebi/agentic-workstation-ubuntu
+https://github.com/TAKAMAgents/agentic-workstation-ubuntu
 ```

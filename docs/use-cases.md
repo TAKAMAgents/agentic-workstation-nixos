@@ -55,5 +55,5 @@ This installs server-oriented packages and enables Docker through NixOS. It does
 Use the Ubuntu edition instead:
 
 ```text
-https://github.com/hghalebi/agentic-workstation-ubuntu
+https://github.com/TAKAMAgents/agentic-workstation-ubuntu
 ```

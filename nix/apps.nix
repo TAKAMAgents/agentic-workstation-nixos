@@ -48,7 +48,7 @@ let
 Add this flake module to a NixOS host:
 
 {
-  inputs.agentic-workstation.url = "github:hghalebi/agentic-workstation-nixos";
+  inputs.agentic-workstation.url = "github:TAKAMAgents/agentic-workstation-nixos";
 
   outputs = { self, nixpkgs, agentic-workstation, ... }: {
     nixosConfigurations.example = nixpkgs.lib.nixosSystem {

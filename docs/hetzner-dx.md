@@ -12,7 +12,7 @@ The old combined project included Ubuntu-focused helpers for:
 Those workflows belong to the Ubuntu edition:
 
 ```text
-https://github.com/hghalebi/agentic-workstation-ubuntu
+https://github.com/TAKAMAgents/agentic-workstation-ubuntu
 ```
 
 For NixOS hosts on Hetzner, manage the machine with a host flake and normal NixOS deployment tooling. Import this module from that host flake and apply with:

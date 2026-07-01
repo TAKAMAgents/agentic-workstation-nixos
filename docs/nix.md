@@ -16,7 +16,7 @@ Import the module from a host flake:
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    agentic-workstation-nixos.url = "github:hghalebi/agentic-workstation-nixos";
+    agentic-workstation-nixos.url = "github:TAKAMAgents/agentic-workstation-nixos";
   };
 
   outputs = { self, nixpkgs, agentic-workstation-nixos, ... }: {

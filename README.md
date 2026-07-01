@@ -1,7 +1,7 @@
 # Agentic Workstation NixOS
 
-[![CI](https://github.com/hghalebi/agentic-workstation-nixos/actions/workflows/ci.yml/badge.svg)](https://github.com/hghalebi/agentic-workstation-nixos/actions/workflows/ci.yml)
-[![Security](https://github.com/hghalebi/agentic-workstation-nixos/actions/workflows/security.yml/badge.svg)](https://github.com/hghalebi/agentic-workstation-nixos/actions/workflows/security.yml)
+[![CI](https://github.com/TAKAMAgents/agentic-workstation-nixos/actions/workflows/ci.yml/badge.svg)](https://github.com/TAKAMAgents/agentic-workstation-nixos/actions/workflows/ci.yml)
+[![Security](https://github.com/TAKAMAgents/agentic-workstation-nixos/actions/workflows/security.yml/badge.svg)](https://github.com/TAKAMAgents/agentic-workstation-nixos/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![NixOS](https://img.shields.io/badge/NixOS-module-blue.svg)](docs/nix.md)
 
@@ -12,7 +12,7 @@ This edition is a Nix flake and NixOS module. It installs the `agentic-workstati
 The Ubuntu Bash installer, apt commands, cloud-init VM factory flow, and remote installer audit live in the separate Ubuntu edition:
 
 ```text
-https://github.com/hghalebi/agentic-workstation-ubuntu
+https://github.com/TAKAMAgents/agentic-workstation-ubuntu
 ```
 
 ## Quick Start
@@ -23,7 +23,7 @@ Add the module to a NixOS flake:
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    agentic-workstation-nixos.url = "github:hghalebi/agentic-workstation-nixos";
+    agentic-workstation-nixos.url = "github:TAKAMAgents/agentic-workstation-nixos";
   };
 
   outputs = { self, nixpkgs, agentic-workstation-nixos, ... }: {

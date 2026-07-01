@@ -6,7 +6,7 @@ This edition assumes the machine is managed by a version-controlled NixOS flake.
 
 ```nix
 {
-  inputs.agentic-workstation-nixos.url = "github:hghalebi/agentic-workstation-nixos";
+  inputs.agentic-workstation-nixos.url = "github:TAKAMAgents/agentic-workstation-nixos";
 
   outputs = { self, nixpkgs, agentic-workstation-nixos, ... }: {
     nixosConfigurations.workstation = nixpkgs.lib.nixosSystem {

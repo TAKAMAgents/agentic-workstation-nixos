@@ -13,5 +13,5 @@ The source tree still contains some legacy Ubuntu scripts split from the origina
 Use the Ubuntu edition for remote installer audit policy:
 
 ```text
-https://github.com/hghalebi/agentic-workstation-ubuntu
+https://github.com/TAKAMAgents/agentic-workstation-ubuntu
 ```
