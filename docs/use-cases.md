@@ -4,6 +4,17 @@ Choose the smallest NixOS profile that matches the machine's job.
 
 ## Interactive Coding Machine
 
+For an existing host, prefer the initializer:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' run \
+  github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
+  --target /etc/nixos \
+  --switch
+```
+
+For manual flakes:
+
 ```nix
 programs.agentic-workstation = {
   enable = true;
@@ -20,7 +31,8 @@ nix --extra-experimental-features 'nix-command flakes' run \
   --switch
 ```
 
-For manual flakes:
+This path enables `containerCompatibility` automatically when OrbStack/LXC is
+detected. For manual flakes:
 
 ```nix
 programs.agentic-workstation = {
@@ -60,6 +72,17 @@ programs.agentic-workstation = {
 ```
 
 ## Server-Oriented Host
+
+For existing NixOS hosts, generate the flake first and then edit
+`agentic-workstation.nix`:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' run \
+  github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
+  --target /etc/nixos \
+  --profile openclaw-server \
+  --docker
+```
 
 ```nix
 programs.agentic-workstation = {

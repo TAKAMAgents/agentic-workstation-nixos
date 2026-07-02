@@ -45,9 +45,24 @@ host.config.system.build.toplevel.drvPath
 "
 ```
 
+When changing `nixos-host-init`, templates, or host workflow docs, also test a
+temporary host directory:
+
+```bash
+tmpdir="$(mktemp -d)"
+cp /etc/nixos/configuration.nix "$tmpdir/configuration.nix"
+nix --extra-experimental-features 'nix-command flakes' run .#nixos-host-init -- \
+  --target "$tmpdir" \
+  --source "path:$PWD" \
+  --container-compat \
+  --no-lock
+nix --extra-experimental-features 'nix-command flakes' flake check --no-build "$tmpdir"
+```
+
 ## Change Rules
 
 - Keep NixOS module behavior declarative.
+- Keep `nixos-host-init` limited to managed NixOS files and lock updates.
 - Do not add remote installer execution to the module.
 - Do not store secrets in examples.
 - Prefer Nixpkgs packages over ad hoc downloads.

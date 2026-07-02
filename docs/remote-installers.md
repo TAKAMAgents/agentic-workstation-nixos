@@ -1,6 +1,6 @@
 # Remote Installer Policy
 
-The supported NixOS module path does not run remote installer scripts.
+The supported NixOS paths do not run remote installer scripts.
 
 Packages should come from:
 

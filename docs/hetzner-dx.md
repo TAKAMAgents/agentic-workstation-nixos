@@ -15,7 +15,19 @@ Those workflows belong to the Ubuntu edition:
 https://github.com/TAKAMAgents/agentic-workstation-ubuntu
 ```
 
-For NixOS hosts on Hetzner, manage the machine with a host flake and normal NixOS deployment tooling. Import this module from that host flake and apply with:
+For NixOS hosts on Hetzner, manage the machine with a host flake and normal
+NixOS deployment tooling. If the host already has `configuration.nix`, the
+initializer can create the workstation flake without enabling container
+compatibility:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' run \
+  github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
+  --target /etc/nixos \
+  --no-container-compat
+```
+
+For manual host flakes, import this module and apply with:
 
 ```bash
 sudo nixos-rebuild switch --flake .#host

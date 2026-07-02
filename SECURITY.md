@@ -16,6 +16,8 @@ Use GitHub private vulnerability reporting when available.
 In scope for this NixOS edition:
 
 - NixOS module options.
+- Generated host flake and module examples.
+- `nixos-host-init` behavior that writes managed NixOS configuration files.
 - Flake package definitions.
 - Dev shell and CI validation.
 - Documentation that could lead users to insecure host configuration.
@@ -38,6 +40,7 @@ Those belong to `agentic-workstation-ubuntu`.
 ## Supply Chain
 
 - Review `flake.lock` updates.
+- For generated hosts, `nixos-host-init` refreshes only the managed `agentic-workstation-nixos` input.
 - Prefer Nixpkgs packages.
 - Use explicit unfree package predicates instead of broad unfree enablement when practical.
 - Keep package additions tied to a profile or documented option.

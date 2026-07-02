@@ -10,10 +10,11 @@ nix --extra-experimental-features 'nix-command flakes' run .#nixos-module
 
 ## Host Initialization
 
-Create or refresh `/etc/nixos` from the published repo and switch:
+Create or refresh `/etc/nixos` from the published repo and switch. This is the
+smooth path for the maintained OrbStack/LXC NixOS coding host:
 
 ```bash
-nix --extra-experimental-features 'nix-command flakes' run \
+nix --extra-experimental-features 'nix-command flakes' run --refresh \
   github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
   --target /etc/nixos \
   --switch
@@ -32,6 +33,12 @@ Initialize only the files in the current directory:
 ```bash
 nix --extra-experimental-features 'nix-command flakes' flake init \
   -t github:TAKAMAgents/agentic-workstation-nixos#orbstack-coding-agent
+```
+
+Refresh only the managed upstream input for a generated host flake:
+
+```bash
+nix flake update agentic-workstation-nixos --flake /etc/nixos
 ```
 
 ## Build And Run CLI
@@ -64,6 +71,12 @@ cargo test --all-targets --all-features
 ```
 
 ## Host Apply
+
+For a generated `/etc/nixos` host:
+
+```bash
+sudo nixos-rebuild switch --flake /etc/nixos#nixos
+```
 
 From a separate host config flake that imports `agentic-workstation-nixos.nixosModules.default`:
 

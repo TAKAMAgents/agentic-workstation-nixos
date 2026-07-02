@@ -9,11 +9,22 @@ nix --extra-experimental-features 'nix-command flakes' run \
   github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
   --target /etc/nixos \
   --switch
+```
+
+From a checkout, the equivalent local helper is:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' run .#nixos-host-init -- \
+  --target /etc/nixos \
+  --switch
+```
+
+For validation and module examples:
+
+```bash
 nix --extra-experimental-features 'nix-command flakes' run .#nixos-module
-nix --extra-experimental-features 'nix-command flakes' run .#nixos-host-init -- --target /etc/nixos
 nix --extra-experimental-features 'nix-command flakes' run .#check
 nix --extra-experimental-features 'nix-command flakes' flake check
-sudo nixos-rebuild switch --flake .#workstation
 ```
 
 Use `agentic-workstation-ubuntu` for Ubuntu install commands.

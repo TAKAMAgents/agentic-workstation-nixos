@@ -11,8 +11,8 @@ This edition uses Release Please for the NixOS flake/module repository.
 ## Version Policy
 
 - Patch: documentation fixes, package list corrections, CI fixes.
-- Minor: new module options, profile behavior changes, new package groups.
-- Major: incompatible option names, profile removals, or changed default behavior with broad host impact.
+- Minor: new module options, initializer behavior, profile behavior changes, new templates, or new package groups.
+- Major: incompatible option names, profile removals, initializer behavior that rewrites broader host state, or changed default behavior with broad host impact.
 
 ## Manual Pre-release Checks
 
@@ -51,4 +51,17 @@ let
 in
 host.config.system.build.toplevel.drvPath
 "
+```
+
+Test host initialization behavior when `nixos-host-init` or templates changed:
+
+```bash
+tmpdir="$(mktemp -d)"
+cp /etc/nixos/configuration.nix "$tmpdir/configuration.nix"
+nix --extra-experimental-features 'nix-command flakes' run .#nixos-host-init -- \
+  --target "$tmpdir" \
+  --source "path:$PWD" \
+  --container-compat \
+  --no-lock
+nix --extra-experimental-features 'nix-command flakes' flake check --no-build "$tmpdir"
 ```

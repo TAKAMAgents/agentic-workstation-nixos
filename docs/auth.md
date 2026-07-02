@@ -1,6 +1,7 @@
 # Authentication
 
-The NixOS module installs tools. It does not authenticate them.
+The NixOS module and `nixos-host-init` install tools. They do not authenticate
+them.
 
 After applying a host configuration, run only the auth commands for services you use:
 
@@ -18,6 +19,7 @@ Some tools may not be installed by a selected profile or may require `extraPacka
 ## Secret Boundaries
 
 - Do not put tokens in `flake.nix`, NixOS modules, or committed config files.
+- Do not put tokens in generated `agentic-workstation.nix`; it is intended to remain commit-safe host configuration.
 - Prefer service-native credential stores.
 - Keep `.env` files and rendered secrets out of Git.
 - Use host-level secret tooling such as SOPS, agenix, or a managed secret store when secrets must be declared.

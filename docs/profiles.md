@@ -4,6 +4,15 @@ Profiles in this edition are NixOS package bundle selectors. They approximate th
 
 Use a profile:
 
+```bash
+nix --extra-experimental-features 'nix-command flakes' run \
+  github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
+  --target /etc/nixos \
+  --profile coding-agent
+```
+
+Or set it manually in a host module:
+
 ```nix
 programs.agentic-workstation = {
   enable = true;
@@ -28,6 +37,15 @@ programs.agentic-workstation = {
 ## Option Overrides
 
 Profile defaults can be overridden:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' run \
+  github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
+  --target /etc/nixos \
+  --profile coding-agent \
+  --no-onepassword \
+  --docker
+```
 
 ```nix
 programs.agentic-workstation = {

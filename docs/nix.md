@@ -1,14 +1,16 @@
 # NixOS Workflow
 
-This repository is a Nix flake with three responsibilities:
+This repository is a Nix flake with five responsibilities:
 
 - Package the `agentic-workstation` Rust CLI.
 - Expose reproducible development shells and checks.
 - Expose `nixosModules.default` for NixOS hosts.
+- Expose `.#nixos-host-init` for existing-host setup.
+- Expose host flake templates for inspectable setup.
 
 It is not the Ubuntu installer edition. Use `agentic-workstation-ubuntu` for apt, cloud-init, and mutating Bash installs.
 
-## NixOS Module
+## NixOS Host Workflow
 
 ### Smooth Host Initialization
 
@@ -29,7 +31,7 @@ By default the initializer:
 - Writes managed `flake.nix` and `agentic-workstation.nix` files.
 - Enables the `coding-agent` profile.
 - Enables container activation compatibility when OrbStack/LXC is detected.
-- Runs `nix flake lock`.
+- Updates the managed `agentic-workstation-nixos` lock input.
 - Runs `nixos-rebuild switch` when `--switch` is passed.
 
 If `flake.nix` or `agentic-workstation.nix` already exists and was not created
@@ -148,10 +150,25 @@ Dev shells are for repository work. They do not change the host system.
 nix --extra-experimental-features 'nix-command flakes' run . -- --help
 nix --extra-experimental-features 'nix-command flakes' run .#plan -- --profile coding-agent
 nix --extra-experimental-features 'nix-command flakes' run .#check
+nix --extra-experimental-features 'nix-command flakes' run .#nixos-host-init -- --target /etc/nixos
 nix --extra-experimental-features 'nix-command flakes' run .#nixos-module
 ```
 
-The `.#doctor`, `.#bootstrap-nix`, `.#e2e`, and `.#docker-smoke` apps remain available for compatibility with the shared source tree, but they are not the primary NixOS host-management path.
+`.#nixos-host-init` is the primary host-management helper for existing NixOS
+machines. The `.#doctor`, `.#bootstrap-nix`, `.#e2e`, and `.#docker-smoke` apps
+remain available for compatibility with the shared source tree, but they are not
+the primary NixOS host-management path.
+
+## Templates
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' flake init \
+  -t github:TAKAMAgents/agentic-workstation-nixos#orbstack-coding-agent
+```
+
+Templates are useful when you want to inspect or commit the generated files
+before switching. They expect an existing `configuration.nix` in the target
+directory.
 
 ## Validation
 
