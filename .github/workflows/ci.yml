@@ -34,6 +34,8 @@ jobs:
         run: /home/runner/go/bin/actionlint
       - name: yamllint
         run: yamllint .
+      - name: Docs DX check
+        run: ./scripts/docs-dx-check.sh
       - name: pre-commit
         run: pre-commit run --all-files
 
@@ -112,40 +114,7 @@ jobs:
           host.config.system.build.toplevel.drvPath
           "
       - name: Smoke test host initializer
-        run: |
-          host_dir="$(mktemp -d)"
-          cat > "$host_dir/configuration.nix" <<'NIX'
-          { pkgs, ... }:
-
-          {
-            boot.loader.grub.enable = false;
-            fileSystems."/" = {
-              device = "none";
-              fsType = "tmpfs";
-            };
-            system.stateVersion = "26.05";
-            nixpkgs.config.allowUnfreePredicate = pkg:
-              builtins.elem (pkgs.lib.getName pkg) [ "1password-cli" ];
-          }
-          NIX
-
-          nix run .#nixos-host-init -- \
-            --target "$host_dir" \
-            --host ci \
-            --system x86_64-linux \
-            --source "path:$PWD" \
-            --container-compat \
-            --no-lock
-
-          nix flake check --no-build "$host_dir"
-          nix eval --impure --raw --expr "
-          let
-            host = (builtins.getFlake \"path:$host_dir\").nixosConfigurations.ci;
-          in
-          if host.config.programs.agentic-workstation.containerCompatibility.enable
-          then \"ok\"
-          else throw \"container compatibility was not enabled\"
-          "
+        run: HOST_INIT_SMOKE_SYSTEM=x86_64-linux ./scripts/smoke-nixos-host-init.sh
       - name: Realize named dev shells
         run: |
           nix develop .#minimal --command true

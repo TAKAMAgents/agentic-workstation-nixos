@@ -11,7 +11,7 @@ nix --extra-experimental-features 'nix-command flakes' run .#nixos-module
 ## Host Initialization
 
 Create or refresh `/etc/nixos` from the published repo and switch. This is the
-smooth path for the maintained OrbStack/LXC NixOS coding host:
+fast path for an existing NixOS coding host:
 
 ```bash
 nix --extra-experimental-features 'nix-command flakes' run --refresh \
@@ -38,8 +38,11 @@ nix --extra-experimental-features 'nix-command flakes' flake init \
 Refresh only the managed upstream input for a generated host flake:
 
 ```bash
-nix flake update agentic-workstation-nixos --flake /etc/nixos
+nix --extra-experimental-features 'nix-command flakes' flake update agentic-workstation-nixos --flake /etc/nixos
 ```
+
+After the generated module has been switched once, short `nix` commands are
+acceptable because the host config enables `nix-command` and `flakes`.
 
 ## Build And Run CLI
 
@@ -75,18 +78,21 @@ cargo test --all-targets --all-features
 For a generated `/etc/nixos` host:
 
 ```bash
-sudo nixos-rebuild switch --flake /etc/nixos#nixos
+sudo env NIX_CONFIG='experimental-features = nix-command flakes' \
+  nixos-rebuild switch --flake /etc/nixos#nixos
 ```
 
 From a separate host config flake that imports `agentic-workstation-nixos.nixosModules.default`:
 
 ```bash
-sudo nixos-rebuild switch --flake .#workstation
+sudo env NIX_CONFIG='experimental-features = nix-command flakes' \
+  nixos-rebuild switch --flake .#workstation
 ```
 
 Update the pinned module:
 
 ```bash
-nix flake update agentic-workstation-nixos
-sudo nixos-rebuild switch --flake .#workstation
+nix --extra-experimental-features 'nix-command flakes' flake update agentic-workstation-nixos
+sudo env NIX_CONFIG='experimental-features = nix-command flakes' \
+  nixos-rebuild switch --flake .#workstation
 ```

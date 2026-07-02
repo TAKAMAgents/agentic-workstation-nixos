@@ -14,7 +14,7 @@ This edition reduces host mutation by using NixOS declarations.
 
 | Risk | Mitigation |
 | --- | --- |
-| Unreviewed package changes | Pin inputs in `flake.lock`; review `nix flake update` diffs. |
+| Unreviewed package changes | Pin inputs in `flake.lock`; review flake update diffs. |
 | Stale managed module input | `nixos-host-init` refreshes only the `agentic-workstation-nixos` input when updating managed host files. |
 | Accidental replacement of local host config | The initializer preserves `configuration.nix`; unmanaged generated-target files require `--force` and are backed up before replacement. |
 | Unfree package policy drift | Use explicit `allowUnfreePredicate` for packages such as `1password-cli`. |

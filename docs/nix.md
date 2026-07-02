@@ -18,7 +18,7 @@ On an existing NixOS host that already has `configuration.nix`, create or
 refresh a managed Agentic Workstation host flake:
 
 ```bash
-nix --extra-experimental-features 'nix-command flakes' run \
+nix --extra-experimental-features 'nix-command flakes' run --refresh \
   github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
   --target /etc/nixos \
   --switch
@@ -43,7 +43,8 @@ that already contains `configuration.nix`:
 ```bash
 nix --extra-experimental-features 'nix-command flakes' flake init \
   -t github:TAKAMAgents/agentic-workstation-nixos#orbstack-coding-agent
-sudo nixos-rebuild switch --flake .#nixos
+sudo env NIX_CONFIG='experimental-features = nix-command flakes' \
+  nixos-rebuild switch --flake .#nixos
 ```
 
 ### Manual Module Import
@@ -78,7 +79,8 @@ Import the module from a host flake:
 Apply the host:
 
 ```bash
-sudo nixos-rebuild switch --flake .#workstation
+sudo env NIX_CONFIG='experimental-features = nix-command flakes' \
+  nixos-rebuild switch --flake .#workstation
 ```
 
 Print a module import example:

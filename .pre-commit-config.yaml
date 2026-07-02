@@ -19,6 +19,12 @@ repos:
         language: system
         pass_filenames: false
 
+      - id: docs-dx-check
+        name: docs dx check
+        entry: ./scripts/docs-dx-check.sh
+        language: system
+        pass_filenames: false
+
       - id: cargo-fmt
         name: cargo fmt
         entry: cargo fmt --check

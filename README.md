@@ -15,8 +15,8 @@ This repository is the NixOS edition of Agentic Workstation. It provides:
 - The `agentic-workstation` planning and lockfile validation CLI
 - Reproducible dev shells and CI checks
 
-The README follows a Stripe-style DX pattern: give the fastest working path
-first, show exactly what state changes, then reveal deeper configuration options.
+The public workflow is intentionally progressive: get the host working first,
+show exactly what state changed, then move into deeper configuration.
 
 Ubuntu apt installs, cloud-init VM factory flows, remote installer audits, and
 imperative shell mutation live in the Ubuntu edition:
@@ -35,6 +35,9 @@ nix --extra-experimental-features 'nix-command flakes' run --refresh \
   --target /etc/nixos \
   --switch
 ```
+
+These first-run commands include explicit Nix feature flags so they work before
+the generated module has enabled flakes on the host.
 
 For OrbStack/LXC hosts, the initializer detects the container environment and
 enables activation compatibility. To be explicit:
@@ -105,7 +108,7 @@ module, and a small workstation module:
 }
 ```
 
-The generated workstation module looks like this:
+For an OrbStack/LXC host, the generated workstation module looks like this:
 
 ```nix
 { pkgs, ... }:
@@ -149,14 +152,21 @@ The generated workstation module looks like this:
 }
 ```
 
+For a bare-metal or VM host initialized with `--no-container-compat`, the
+generated module uses:
+
+```nix
+containerCompatibility.enable = false;
+```
+
 ## Choose Your Path
 
 | Use case | Command |
 | --- | --- |
-| Existing NixOS host | `nix run --refresh github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- --target /etc/nixos --switch` |
+| Existing NixOS host | Use the Quick Start initializer command. |
 | Existing OrbStack/LXC host | Add `--container-compat` |
 | Existing bare-metal or VM host | Add `--no-container-compat` |
-| Inspect files before switching | `nix flake init -t github:TAKAMAgents/agentic-workstation-nixos#orbstack-coding-agent` |
+| Inspect files before switching | `nix --extra-experimental-features 'nix-command flakes' flake init -t github:TAKAMAgents/agentic-workstation-nixos#orbstack-coding-agent` |
 | Fully custom host flake | Import `agentic-workstation-nixos.nixosModules.default` manually |
 
 ## Manual Module Import
@@ -191,7 +201,8 @@ Use this when you already own a host flake and want direct control:
 Apply it:
 
 ```bash
-sudo nixos-rebuild switch --flake .#workstation
+sudo env NIX_CONFIG='experimental-features = nix-command flakes' \
+  nixos-rebuild switch --flake .#workstation
 ```
 
 ## Profiles
@@ -269,9 +280,13 @@ nix --extra-experimental-features 'nix-command flakes' run --refresh \
 Or update the managed input directly:
 
 ```bash
-nix flake update agentic-workstation-nixos --flake /etc/nixos
-sudo nixos-rebuild switch --flake /etc/nixos#nixos
+nix --extra-experimental-features 'nix-command flakes' flake update agentic-workstation-nixos --flake /etc/nixos
+sudo env NIX_CONFIG='experimental-features = nix-command flakes' \
+  nixos-rebuild switch --flake /etc/nixos#nixos
 ```
+
+After the generated module has been switched once, short `nix` commands are
+fine because the host config enables `nix-command` and `flakes`.
 
 ## Roll Back
 
@@ -327,6 +342,7 @@ nix --extra-experimental-features 'nix-command flakes' run . -- verify-lockfile
 - [docs/use-cases.md](docs/use-cases.md): choosing profiles and entry points.
 - [docs/vm-lifecycle.md](docs/vm-lifecycle.md): host initialization, updates, commits, and rollback.
 - [docs/auth.md](docs/auth.md): authentication commands and secret boundaries.
+- [docs/doc-style.md](docs/doc-style.md): documentation and DX consistency rules.
 - [commands.md](commands.md): command reference.
 
 ## License

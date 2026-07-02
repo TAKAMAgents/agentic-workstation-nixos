@@ -5,7 +5,7 @@ The canonical command reference is [../commands.md](../commands.md).
 The supported NixOS path is:
 
 ```bash
-nix --extra-experimental-features 'nix-command flakes' run \
+nix --extra-experimental-features 'nix-command flakes' run --refresh \
   github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
   --target /etc/nixos \
   --switch

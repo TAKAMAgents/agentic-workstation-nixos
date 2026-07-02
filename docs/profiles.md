@@ -64,7 +64,7 @@ The Ubuntu edition runs modules such as `base`, `docker`, `cloud`, `config`, `wo
 The Rust CLI can still render read-only plans:
 
 ```bash
-nix run . -- plan --profile coding-agent --json
+nix --extra-experimental-features 'nix-command flakes' run . -- plan --profile coding-agent --json
 ```
 
 Treat those plans as compatibility/planning output, not as the NixOS module implementation.

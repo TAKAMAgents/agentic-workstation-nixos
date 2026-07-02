@@ -30,5 +30,6 @@ nix --extra-experimental-features 'nix-command flakes' run \
 For manual host flakes, import this module and apply with:
 
 ```bash
-sudo nixos-rebuild switch --flake .#host
+sudo env NIX_CONFIG='experimental-features = nix-command flakes' \
+  nixos-rebuild switch --flake .#host
 ```

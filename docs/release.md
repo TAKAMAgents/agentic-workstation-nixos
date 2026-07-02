@@ -22,6 +22,7 @@ nix --extra-experimental-features 'nix-command flakes' flake check
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-targets --all-features
+./scripts/docs-dx-check.sh
 ```
 
 Evaluate a sample host when module options changed:
@@ -56,12 +57,5 @@ host.config.system.build.toplevel.drvPath
 Test host initialization behavior when `nixos-host-init` or templates changed:
 
 ```bash
-tmpdir="$(mktemp -d)"
-cp /etc/nixos/configuration.nix "$tmpdir/configuration.nix"
-nix --extra-experimental-features 'nix-command flakes' run .#nixos-host-init -- \
-  --target "$tmpdir" \
-  --source "path:$PWD" \
-  --container-compat \
-  --no-lock
-nix --extra-experimental-features 'nix-command flakes' flake check --no-build "$tmpdir"
+./scripts/smoke-nixos-host-init.sh
 ```

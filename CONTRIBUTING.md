@@ -14,6 +14,7 @@ nix --extra-experimental-features 'nix-command flakes' flake check
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-targets --all-features
+./scripts/docs-dx-check.sh
 ```
 
 When changing the NixOS module, also evaluate a sample host:
@@ -46,11 +47,19 @@ host.config.system.build.toplevel.drvPath
 ```
 
 When changing `nixos-host-init`, templates, or host workflow docs, also test a
-temporary host directory:
+temporary host directory with the self-contained fixture used by CI:
+
+```bash
+./scripts/smoke-nixos-host-init.sh
+```
+
+To test against a real host config instead of the fixture, copy the complete
+config directory so sibling imports such as `incus.nix` or `orbstack.nix` are
+available:
 
 ```bash
 tmpdir="$(mktemp -d)"
-cp /etc/nixos/configuration.nix "$tmpdir/configuration.nix"
+cp -a /etc/nixos/. "$tmpdir/"
 nix --extra-experimental-features 'nix-command flakes' run .#nixos-host-init -- \
   --target "$tmpdir" \
   --source "path:$PWD" \
@@ -58,6 +67,11 @@ nix --extra-experimental-features 'nix-command flakes' run .#nixos-host-init -- 
   --no-lock
 nix --extra-experimental-features 'nix-command flakes' flake check --no-build "$tmpdir"
 ```
+
+## Documentation Rules
+
+Follow [docs/doc-style.md](docs/doc-style.md) for command consistency,
+copy-paste safety, and public DX language.
 
 ## Change Rules
 
