@@ -10,6 +10,42 @@ It is not the Ubuntu installer edition. Use `agentic-workstation-ubuntu` for apt
 
 ## NixOS Module
 
+### Smooth Host Initialization
+
+On an existing NixOS host that already has `configuration.nix`, create or
+refresh a managed Agentic Workstation host flake:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' run \
+  github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
+  --target /etc/nixos \
+  --switch
+```
+
+By default the initializer:
+
+- Detects the host name and CPU system.
+- Preserves the existing `configuration.nix`.
+- Writes managed `flake.nix` and `agentic-workstation.nix` files.
+- Enables the `coding-agent` profile.
+- Enables container activation compatibility when OrbStack/LXC is detected.
+- Runs `nix flake lock`.
+- Runs `nixos-rebuild switch` when `--switch` is passed.
+
+If `flake.nix` or `agentic-workstation.nix` already exists and was not created
+by this tool, rerun with `--force` to back it up and replace it.
+
+For manual setup, initialize the OrbStack coding-agent template in a directory
+that already contains `configuration.nix`:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' flake init \
+  -t github:TAKAMAgents/agentic-workstation-nixos#orbstack-coding-agent
+sudo nixos-rebuild switch --flake .#nixos
+```
+
+### Manual Module Import
+
 Import the module from a host flake:
 
 ```nix

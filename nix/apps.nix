@@ -45,20 +45,28 @@ let
     text = ''
       set -euo pipefail
       cat <<'USAGE'
+Create or refresh an existing NixOS host flake:
+
+nix --extra-experimental-features 'nix-command flakes' run \
+  github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
+  --target /etc/nixos \
+  --switch
+
 Add this flake module to a NixOS host:
 
 {
-  inputs.agentic-workstation.url = "github:TAKAMAgents/agentic-workstation-nixos";
+  inputs.agentic-workstation-nixos.url = "github:TAKAMAgents/agentic-workstation-nixos";
 
-  outputs = { self, nixpkgs, agentic-workstation, ... }: {
+  outputs = { self, nixpkgs, agentic-workstation-nixos, ... }: {
     nixosConfigurations.example = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
-        agentic-workstation.nixosModules.default
+        agentic-workstation-nixos.nixosModules.default
         {
           programs.agentic-workstation = {
             enable = true;
             profile = "coding-agent";
+            containerCompatibility.enable = true;
           };
         }
       ];
@@ -66,6 +74,19 @@ Add this flake module to a NixOS host:
   };
 }
 USAGE
+    '';
+  };
+
+  nixosHostInitScript = pkgs.writeShellApplication {
+    name = "agentic-workstation-nixos-host-init";
+    runtimeInputs = with pkgs; [
+      bash
+      coreutils
+      gnugrep
+    ];
+    text = ''
+      set -euo pipefail
+      exec bash ${src}/scripts/nixos-host-init.sh "$@"
     '';
   };
 
@@ -84,6 +105,7 @@ in
     docker-smoke = app "${dockerSmokeScript}/bin/agentic-workstation-docker-smoke" "Build Ubuntu Docker smoke-test images.";
     doctor = app "${doctorScript}/bin/agentic-workstation-doctor" "Run host readiness checks.";
     e2e = app "${e2eScript}/bin/agentic-workstation-e2e" "Run the Nix bootstrap end-to-end smoke test.";
+    nixos-host-init = app "${nixosHostInitScript}/bin/agentic-workstation-nixos-host-init" "Create or refresh a NixOS host flake that imports Agentic Workstation.";
     nixos-module = app "${nixosModuleScript}/bin/agentic-workstation-nixos-module" "Print a NixOS module import example.";
     plan = app "${planScript}/bin/agentic-workstation-plan" "Render an install plan with the Agentic Workstation CLI.";
   };

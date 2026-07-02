@@ -17,7 +17,21 @@ https://github.com/TAKAMAgents/agentic-workstation-ubuntu
 
 ## Quick Start
 
-Add the module to a NixOS flake:
+On an existing OrbStack/LXC-style NixOS host, initialize `/etc/nixos` from this repo and switch:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' run \
+  github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
+  --target /etc/nixos \
+  --switch
+```
+
+The command preserves the existing `configuration.nix`, writes a managed
+`flake.nix` plus `agentic-workstation.nix`, locks the inputs, and runs
+`nixos-rebuild switch`. Existing unmanaged files require `--force`; backups are
+created before replacement.
+
+For manual host flakes, add the module directly:
 
 ```nix
 {
@@ -54,6 +68,13 @@ Inspect the module example from a checkout:
 
 ```bash
 nix --extra-experimental-features 'nix-command flakes' run .#nixos-module
+```
+
+Initialize a local host flake manually with the OrbStack coding-agent template:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' flake init \
+  -t github:TAKAMAgents/agentic-workstation-nixos#orbstack-coding-agent
 ```
 
 ## Module Options

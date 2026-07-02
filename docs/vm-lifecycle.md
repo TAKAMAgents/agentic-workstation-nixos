@@ -2,7 +2,22 @@
 
 This edition assumes the machine is managed by a version-controlled NixOS flake.
 
-## 1. Import The Module
+## 1. Initialize The Host
+
+For an existing OrbStack/LXC-style NixOS host, let the repository create the
+managed host flake:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' run \
+  github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
+  --target /etc/nixos \
+  --switch
+```
+
+The initializer keeps the generated local `configuration.nix`, writes
+`flake.nix` and `agentic-workstation.nix`, locks inputs, and switches the host.
+
+## 2. Import The Module Manually
 
 ```nix
 {
@@ -26,20 +41,20 @@ This edition assumes the machine is managed by a version-controlled NixOS flake.
 }
 ```
 
-## 2. Apply Changes
+## 3. Apply Changes
 
 ```bash
 sudo nixos-rebuild switch --flake .#workstation
 ```
 
-## 3. Commit The Machine State
+## 4. Commit The Machine State
 
 ```bash
 git add flake.nix flake.lock configuration.nix
 git commit -m "feat: enable agentic workstation profile"
 ```
 
-## 4. Update The Module
+## 5. Update The Module
 
 ```bash
 nix flake update agentic-workstation-nixos
@@ -48,7 +63,7 @@ git add flake.lock
 git commit -m "chore: update agentic workstation module"
 ```
 
-## 5. Roll Back
+## 6. Roll Back
 
 Use normal NixOS rollback tools:
 

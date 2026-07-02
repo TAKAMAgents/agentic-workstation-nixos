@@ -11,6 +11,27 @@ programs.agentic-workstation = {
 };
 ```
 
+## OrbStack Or LXC Coding Container
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' run \
+  github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
+  --target /etc/nixos \
+  --switch
+```
+
+For manual flakes:
+
+```nix
+programs.agentic-workstation = {
+  enable = true;
+  profile = "coding-agent";
+  containerCompatibility.enable = true;
+  docker.enable = false;
+  onePassword.enable = false;
+};
+```
+
 ## Security Review Machine
 
 ```nix

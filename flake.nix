@@ -16,5 +16,10 @@
         inherit self;
       };
       nixosModules.agentic-workstation = self.nixosModules.default;
+      templates.orbstack-coding-agent = {
+        path = ./templates/orbstack-coding-agent;
+        description = "OrbStack/LXC NixOS coding-agent host flake";
+      };
+      templates.default = self.templates.orbstack-coding-agent;
     };
 }

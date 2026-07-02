@@ -8,6 +8,32 @@ This reference covers the NixOS edition. Ubuntu apt, cloud-init, and Bash instal
 nix --extra-experimental-features 'nix-command flakes' run .#nixos-module
 ```
 
+## Host Initialization
+
+Create or refresh `/etc/nixos` from the published repo and switch:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' run \
+  github:TAKAMAgents/agentic-workstation-nixos#nixos-host-init -- \
+  --target /etc/nixos \
+  --switch
+```
+
+From a checkout, use the local app:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' run .#nixos-host-init -- \
+  --target /etc/nixos \
+  --switch
+```
+
+Initialize only the files in the current directory:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' flake init \
+  -t github:TAKAMAgents/agentic-workstation-nixos#orbstack-coding-agent
+```
+
 ## Build And Run CLI
 
 ```bash
