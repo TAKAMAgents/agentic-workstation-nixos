@@ -79,11 +79,18 @@ programs.agentic-workstation = {
   onePassword.enable = false;
   docker.enable = true;
   direnv.enable = true;
+  containerCompatibility.enable = false;
 
   extraPackages = with pkgs; [
     terraform
   ];
 };
+```
+
+For OrbStack/LXC-style NixOS containers, enable the activation workaround:
+
+```nix
+programs.agentic-workstation.containerCompatibility.enable = true;
 ```
 
 Profiles currently accepted by the module:

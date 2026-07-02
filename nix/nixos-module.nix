@@ -190,18 +190,51 @@ in
       default = true;
       description = "Enable direnv through the NixOS programs module.";
     };
+
+    containerCompatibility.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Apply OrbStack/LXC-friendly activation workarounds by suppressing
+        debugfs mounting and avoiding D-Bus reloads during NixOS switches.
+      '';
+    };
   };
 
-  config = lib.mkIf cfg.enable {
-    environment.systemPackages =
-      [ cfg.package ]
-      ++ profilePackages.${cfg.profile}
-      ++ browserPackages
-      ++ cloudPackages
-      ++ onePasswordPackages
-      ++ cfg.extraPackages;
+  config = lib.mkIf cfg.enable (lib.mkMerge [
+    {
+      environment.systemPackages =
+        [ cfg.package ]
+        ++ profilePackages.${cfg.profile}
+        ++ browserPackages
+        ++ cloudPackages
+        ++ onePasswordPackages
+        ++ cfg.extraPackages;
 
-    programs.direnv.enable = lib.mkIf cfg.direnv.enable true;
-    virtualisation.docker.enable = lib.mkIf cfg.docker.enable true;
-  };
+      programs.direnv.enable = lib.mkIf cfg.direnv.enable true;
+      virtualisation.docker.enable = lib.mkIf cfg.docker.enable true;
+    }
+
+    (lib.mkIf cfg.containerCompatibility.enable {
+      systemd.suppressedSystemUnits = [
+        "sys-kernel-debug.mount"
+      ];
+      systemd.services.dbus = {
+        reloadIfChanged = lib.mkForce false;
+        restartIfChanged = lib.mkForce false;
+      };
+      systemd.services."dbus-broker" = {
+        reloadIfChanged = lib.mkForce false;
+        restartIfChanged = lib.mkForce false;
+      };
+      systemd.user.services.dbus = {
+        reloadIfChanged = lib.mkForce false;
+        restartIfChanged = lib.mkForce false;
+      };
+      systemd.user.services."dbus-broker" = {
+        reloadIfChanged = lib.mkForce false;
+        restartIfChanged = lib.mkForce false;
+      };
+    })
+  ]);
 }

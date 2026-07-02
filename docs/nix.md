@@ -65,10 +65,21 @@ programs.agentic-workstation = {
   localModelRuntime.enable = false;
   docker.enable = false;
   direnv.enable = true;
+  containerCompatibility.enable = false;
 };
 ```
 
 Default boolean values are profile-dependent. For example, `coding-agent` enables browser, cloud, and 1Password packages; `factory` enables factory and security packages; `openclaw-server` enables Docker by default.
+
+Enable `containerCompatibility` for OrbStack/LXC-style NixOS containers that cannot mount debugfs or reliably reload D-Bus during activation:
+
+```nix
+programs.agentic-workstation = {
+  enable = true;
+  profile = "coding-agent";
+  containerCompatibility.enable = true;
+};
+```
 
 `_1password-cli` is unfree in Nixpkgs. Hosts that keep `onePassword.enable = true` must allow that package, for example:
 
