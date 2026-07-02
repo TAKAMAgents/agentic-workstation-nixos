@@ -21,7 +21,7 @@ Options:
   --onepassword            Enable 1Password CLI package
   --no-onepassword         Disable 1Password CLI package (default)
   --force                  Rewrite unmanaged flake.nix or agentic-workstation.nix after creating backups
-  --no-lock                Do not run nix flake lock after writing files
+  --no-lock                Do not update flake.lock after writing files
   --switch                 Run nixos-rebuild switch after writing files
   -h, --help               Show this help
 
@@ -272,7 +272,7 @@ install_generated_file "$tmpdir/flake.nix" "$target/flake.nix" "$force"
 install_generated_file "$tmpdir/agentic-workstation.nix" "$target/agentic-workstation.nix" "$force"
 
 if [[ "$lock" == "true" ]]; then
-  root_cmd nix --extra-experimental-features "nix-command flakes" flake lock "$target"
+  root_cmd nix --extra-experimental-features "nix-command flakes" flake update agentic-workstation-nixos --flake "$target"
 fi
 
 echo
