@@ -3,10 +3,19 @@ name: CI
 "on":
   push:
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   static:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
       - name: Install check tools
@@ -30,6 +39,7 @@ jobs:
 
   unit:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
       - name: Install unit test tools
@@ -39,6 +49,7 @@ jobs:
 
   rust:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - name: Install Rust components
@@ -54,6 +65,7 @@ jobs:
 
   nix:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       NIX_CONFIG: experimental-features = nix-command flakes
     steps:
@@ -98,6 +110,41 @@ jobs:
             };
           in
           host.config.system.build.toplevel.drvPath
+          "
+      - name: Smoke test host initializer
+        run: |
+          host_dir="$(mktemp -d)"
+          cat > "$host_dir/configuration.nix" <<'NIX'
+          { pkgs, ... }:
+
+          {
+            boot.loader.grub.enable = false;
+            fileSystems."/" = {
+              device = "none";
+              fsType = "tmpfs";
+            };
+            system.stateVersion = "26.05";
+            nixpkgs.config.allowUnfreePredicate = pkg:
+              builtins.elem (pkgs.lib.getName pkg) [ "1password-cli" ];
+          }
+          NIX
+
+          nix run .#nixos-host-init -- \
+            --target "$host_dir" \
+            --host ci \
+            --system x86_64-linux \
+            --source "path:$PWD" \
+            --container-compat \
+            --no-lock
+
+          nix flake check --no-build "$host_dir"
+          nix eval --impure --raw --expr "
+          let
+            host = (builtins.getFlake \"path:$host_dir\").nixosConfigurations.ci;
+          in
+          if host.config.programs.agentic-workstation.containerCompatibility.enable
+          then \"ok\"
+          else throw \"container compatibility was not enabled\"
           "
       - name: Realize named dev shells
         run: |

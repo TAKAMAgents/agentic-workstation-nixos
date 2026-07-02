@@ -9,6 +9,7 @@ This NixOS edition was split from the original combined `hghalebi/agentic-workst
 - Added the `orbstack-coding-agent` flake template.
 - Added container activation compatibility for OrbStack/LXC-style NixOS hosts.
 - Refreshed documentation around the remote initializer, generated host files, lock refresh behavior, and rollback path.
+- Hardened CI/CD with least-privilege workflow permissions, concurrency, timeouts, and a host-initializer smoke test.
 - Clarified that Ubuntu apt, cloud-init, and mutating Bash installer workflows belong to `agentic-workstation-ubuntu`.
 - Updated CI and nightly workflows to evaluate the NixOS module and profile matrix.
 - Fixed the factory profile package list for current Nixpkgs by using `poppler-utils`.

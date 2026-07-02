@@ -5,9 +5,17 @@ name: Nightly
   schedule:
     - cron: "42 4 * * *"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   nixos-profiles:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       NIX_CONFIG: experimental-features = nix-command flakes
     strategy:
