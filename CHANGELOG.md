@@ -9,6 +9,21 @@ This NixOS edition was split from the original combined `hghalebi/agentic-workst
 - Updated CI and nightly workflows to evaluate the NixOS module and profile matrix.
 - Fixed the factory profile package list for current Nixpkgs by using `poppler-utils`.
 
+## [0.3.0](https://github.com/TAKAMAgents/agentic-workstation-nixos/compare/v0.2.0...v0.3.0) (2026-07-02)
+
+
+### Features
+
+* add container activation compatibility option ([54e8b38](https://github.com/TAKAMAgents/agentic-workstation-nixos/commit/54e8b38879a36b84089f83bcd33f4c5683414b57))
+* add reproducible nixos host initializer ([aaf423a](https://github.com/TAKAMAgents/agentic-workstation-nixos/commit/aaf423a2519d0b909eea79f9b630129dc28775e0))
+* create nixos workstation edition ([eb9ac41](https://github.com/TAKAMAgents/agentic-workstation-nixos/commit/eb9ac41a0c8fe26ed2fd08f9ae6a25b40c667923))
+
+
+### Bug Fixes
+
+* align nixos module and documentation ([99e8fb0](https://github.com/TAKAMAgents/agentic-workstation-nixos/commit/99e8fb05adb158665a70413e8408e636226963ce))
+* refresh managed host flake input ([d22600c](https://github.com/TAKAMAgents/agentic-workstation-nixos/commit/d22600c3e28e257eb94ea530f383a5f6a60aeb30))
+
 ## [0.2.0](https://github.com/hghalebi/agentic-workstation/compare/v0.1.1...v0.2.0) (2026-06-15)
 
 
